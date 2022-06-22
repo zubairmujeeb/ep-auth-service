@@ -13,11 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Objects;
 
 @RestController
@@ -61,6 +59,12 @@ public class JwtAuthenticationController {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
         return username;
+    }
+
+    @GetMapping(value = "/users/me")
+    public Principal me(Principal principal) {
+
+        return principal;
     }
 
 }

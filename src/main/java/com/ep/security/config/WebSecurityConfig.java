@@ -1,6 +1,6 @@
 package com.ep.security.config;
 
-import com.ep.security.common.utils.JwtAuthenticationEntryPoint;
+import com.ep.security.filter.JwtAuthenticationEntryPoint;
 import com.ep.security.filter.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static com.ep.security.common.constants.Constants.GENERATE_TOKEN_ENDPOINT;
+import static com.ep.security.common.constants.Constants.REFRESH_TOKEN_ENDPOINT;
 
 @Configuration
 @EnableWebSecurity
@@ -54,9 +57,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf().disable().authorizeRequests().antMatchers("/generate-token")
+        httpSecurity.csrf().disable().authorizeRequests().antMatchers(GENERATE_TOKEN_ENDPOINT,
+                REFRESH_TOKEN_ENDPOINT)
                 .permitAll()
-                .anyRequest().authenticated().and().exceptionHandling()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and()
                 .sessionManagement()

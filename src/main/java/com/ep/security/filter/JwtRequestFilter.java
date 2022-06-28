@@ -22,8 +22,9 @@ import static com.ep.security.common.constants.Constants.*;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    public static final String AUTHORIZATION = "Authorization";
-    public static final String BEARER_ = "Bearer ";
+
+    String username = null;
+    String jwtToken = null;
 
     @Autowired
     JwtUserDetailsService jwtUserDetailsService;
@@ -37,9 +38,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String requestTokenHeader = request.getHeader(AUTHORIZATION);
-
-        String username = null;
-        String jwtToken = null;
         if (requestTokenHeader != null &&
                 requestTokenHeader.startsWith(BEARER_)) {
             jwtToken = requestTokenHeader.substring(7);
@@ -50,8 +48,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (ExpiredJwtException e) {
                 throw new IllegalArgumentException(JWT_TOKEN_EXPIRED);
             }
-        } else {
-            logger.warn(JWT_TOKEN_NOT_WITH_BEARER);
         }
         if (username != null &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {

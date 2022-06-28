@@ -1,17 +1,15 @@
 package com.ep.security.dto.response;
 
-import java.io.Serializable;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public class JwtResponse implements Serializable {
+@NoArgsConstructor
+@Getter
+@Setter
+public class JwtResponse {
 
-	private static final long serialVersionUID = -8091879091924046844L;
-	private final String jwttoken;
+    private String accessToken;
 
-	public JwtResponse(String jwttoken) {
-		this.jwttoken = jwttoken;
-	}
 
-	public String getToken() {
-		return this.jwttoken;
-	}
 }

@@ -1,65 +1,47 @@
 package com.ep.security.controller;
 
+import com.ep.security.common.constants.Constants;
 import com.ep.security.common.utils.JwtTokenUtil;
 import com.ep.security.dto.request.JwtRequest;
 import com.ep.security.dto.response.JwtResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
-import java.util.Objects;
+import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 public class JwtAuthenticationController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-
-    @Autowired
-    private UserDetailsService jwtInMemoryUserDetailsService;
+    private final JwtTokenUtil jwtTokenUtil;
+    private final UserDetailsService jwtInMemoryUserDetailsService;
 
     @RequestMapping(value = "/generate-token", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
 
-        authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
+        jwtTokenUtil.authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
         final UserDetails userDetails = jwtInMemoryUserDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
-        return ResponseEntity.ok(new JwtResponse(jwtTokenUtil.
-                generateToken(userDetails)));
+        JwtResponse response = jwtTokenUtil.generateToken(userDetails);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    private void authenticate(String username, String password) throws Exception {
-        Objects.requireNonNull(username);
-        Objects.requireNonNull(password);
+    @RequestMapping(value = "/refresh-token", method = RequestMethod.GET)
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
 
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED", e);
-        } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
-        }
+        Claims claims = jwtTokenUtil.getAllClaimsFromToken(request.getHeader(Constants.AUTHORIZATION));
+        Map<String, Object> expectedMap = jwtTokenUtil.getMapFromJwtToken(claims);
+        String token = jwtTokenUtil.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
+        return ResponseEntity.ok(token);
     }
 
-    @RequestMapping("/get-users")
-    @PreAuthorize("hasAuthority('employee:read')")
-    public String getActiveUsers() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = userDetails.getUsername();
-        return username;
-    }
 
     @GetMapping(value = "/users/me")
     public Principal me(Principal principal) {

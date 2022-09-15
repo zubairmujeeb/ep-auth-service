@@ -38,8 +38,8 @@ public class JwtAuthenticationController {
 
         Claims claims = jwtTokenUtil.getAllClaimsFromToken(request.getHeader(Constants.AUTHORIZATION));
         Map<String, Object> expectedMap = jwtTokenUtil.getMapFromJwtToken(claims);
-        String token = jwtTokenUtil.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
-        return ResponseEntity.ok(token);
+        JwtResponse jwtResponse = jwtTokenUtil.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
+        return new ResponseEntity<>(jwtResponse, HttpStatus.OK);
     }
 
 

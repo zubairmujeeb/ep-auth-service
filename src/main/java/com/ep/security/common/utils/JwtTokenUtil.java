@@ -74,16 +74,17 @@ public class JwtTokenUtil implements Serializable {
     }
 
 
-    public String doGenerateRefreshToken(Map<String, Object> claims, String subject) {
-
-        return Jwts.builder()
+    public JwtResponse doGenerateRefreshToken(Map<String, Object> claims, String subject) {
+        JwtResponse jwtResponse = new JwtResponse();
+        jwtResponse.setAccessToken(Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()
                         + REFRESH_TOKEN_VALIDITY * EXPIRATION_))
                 .signWith(SignatureAlgorithm.HS512, jwtAuthProperties.getSecretKey())
-                .compact();
+                .compact());
+        return jwtResponse;
 
     }
 
